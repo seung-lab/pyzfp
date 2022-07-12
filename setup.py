@@ -7,6 +7,7 @@ from distutils.errors import DistutilsSetupError
 import os
 import subprocess
 import setuptools
+import sys
 
 ZFP_DOWNLOAD_PATH = 'https://github.com/LLNL/zfp/releases/download/0.5.5/zfp-0.5.5.tar.gz'  # noqa
 
@@ -64,6 +65,11 @@ class lazy_cythonize(list):
 def extensions():
     import numpy
     from Cython.Build import cythonize
+
+    extra_compile_args = []
+    if sys.platform == 'darwin':
+        extra_compile_args += [ '-stdlib=libc++', '-mmacosx-version-min=10.9' ]
+
     ext = Extension("pyzfp",
                     sources=["pyzfp.pyx"],
                     include_dirs=['zfp-0.5.5/include',
@@ -71,6 +77,7 @@ def extensions():
                     libraries=["zfp"],  # Unix-like specific,
                     library_dirs=["zfp-0.5.5/lib"],
                     # extra_link_args=['-Wl,-rpath,/usr/local/lib']
+                    extra_compile_args=extra_compile_args,
                     )
     return cythonize([ext])
 
